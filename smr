@@ -1,0 +1,65 @@
+import h5py
+import numpy as np
+import pandas as pd
+
+
+def load_wavelengths(dir_path):
+  print("Reading wavelengths ... ", end="", flush=True)
+  with h5py.File(dir_path + "/2021_09_24_SMR_99x61.asc", 'r') as smr_file:
+    wavelengths = smr_file["Wavelengths"]["1"][:]
+  print("done")
+  return wavelengths
+
+def load_smr_data(dir_path, spectra_count=6039):
+  print("Reading SMR samples (6039 samples; {} spectra per sample):"
+          .format(spectra_count))
+  smrdata = []   
+  with h5py.File(dir_path + "/2021_09_24_SMR_99x61.asc", 'r') as smr_file:
+        for i_sample, sample in smr_file["Spectra"].items():
+            print("\r-> sample: {}".format(i_sample), end='', flush=True)
+            smrdata.append(sample[:, :spectra_count].transpose())
+  print("\n-> combining samples into final matrix ... ", end="", flush=True)
+  smrdata = np.concatenate(smrdata)
+  print("done [shape: {}]".format(smrdata.shape))
+  return smrdata
+
+def load_smr_labels(dir_path, spectra_count=6039):
+  print("Reading SMR labels ... ", end="", flush=True)
+  smr_labels = []
+  with h5py.File(dir_path + "/2021_09_24_SMR_99x61.asc", 'r') as smr_file:
+      all_labels = smr_file["Class"]["1"]
+      for i in range(0, 50000, 500):
+          smr_labels.extend(all_labels[i:i+spectra_count])
+  smr_labels = np.array(smr_labels, dtype=int)
+  print("done")
+  return smr_labels
+  
+ def smr_to_numpy_pickle(dir_path, spectra_count=6039):
+  # Load and save wavelengths
+    wavelengths = load_wavelengths(dir_path)
+    np.save(dir_path + "contest_wavelengths.npy", wavelengths)
+    # Load and save class labels
+    y_smr = load_smr_labels(dir_path, spectra_count)
+    np.save(dir_path + "contest_SMR-{}-labels.npy".format(spectra_count),
+            y_smr)
+    # Load and save spectra
+    x_smr = load_smr_data(dir_path, spectra_count)
+    np.save(dir_path + "contest_SMR-{}-data.npy".format(spectra_count),
+            x_smr)
+
+def smr_to_pandas_pickle(dir_path, spectra_count=6039):
+    # Load and round wavelengths
+    wavelengths = np.round(load_wavelengths(dir_path), 2)
+    # Load class labels
+    y_smr = load_smr_labels(dir_path, spectra_count)
+    # Load spectra
+    x_smr = load_smr_data(dir_path, spectra_count)
+    # Create and save Pandas DataFrame into pickle
+    df = pd.DataFrame(x_smr, columns=wavelengths)
+    df['class'] = y_smr
+    df.to_pickle(dir_path + "contest_SMR-{}.pkl".format(spectra_count))
+    
+ 
+if __name__ == "__main__":
+    datasets_dir = "\2021_09_24_SMR_99x61.asc"
+    smr_to_pandas_pickle(datasets_dir, 50)
