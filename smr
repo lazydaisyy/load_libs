@@ -5,7 +5,7 @@ import pandas as pd
 
 def load_wavelengths(dir_path):
   print("Reading wavelengths ... ", end="", flush=True)
-  with h5py.File(dir_path + "/2021_09_24_SMR_99x61.asc", 'r') as smr_file:
+  with h5py.File(dir_path + "/content/drive/MyDrive/Work/2021_09_24_SMR_99x61.asc", 'r') as smr_file:
     wavelengths = smr_file["Wavelengths"]["1"][:]
   print("done")
   return wavelengths
@@ -14,7 +14,7 @@ def load_smr_data(dir_path, spectra_count=6039):
   print("Reading SMR samples (6039 samples; {} spectra per sample):"
           .format(spectra_count))
   smrdata = []   
-  with h5py.File(dir_path + "/2021_09_24_SMR_99x61.asc", 'r') as smr_file:
+  with h5py.File(dir_path + "/content/drive/MyDrive/Work/2021_09_24_SMR_99x61.asc", 'r') as smr_file:
         for i_sample, sample in smr_file["Spectra"].items():
             print("\r-> sample: {}".format(i_sample), end='', flush=True)
             smrdata.append(sample[:, :spectra_count].transpose())
@@ -26,7 +26,7 @@ def load_smr_data(dir_path, spectra_count=6039):
 def load_smr_labels(dir_path, spectra_count=6039):
   print("Reading SMR labels ... ", end="", flush=True)
   smr_labels = []
-  with h5py.File(dir_path + "/2021_09_24_SMR_99x61.asc", 'r') as smr_file:
+  with h5py.File(dir_path + "/content/drive/MyDrive/Work/2021_09_24_SMR_99x61.asc", 'r') as smr_file:
       all_labels = smr_file["Class"]["1"]
       for i in range(0, 50000, 500):
           smr_labels.extend(all_labels[i:i+spectra_count])
@@ -61,5 +61,5 @@ def smr_to_pandas_pickle(dir_path, spectra_count=6039):
     
  
 if __name__ == "__main__":
-    datasets_dir = "\2021_09_24_SMR_99x61.asc"
+    datasets_dir = "/content/drive/MyDrive/Work/2021_09_24_SMR_99x61.asc"
     smr_to_pandas_pickle(datasets_dir, 50)
