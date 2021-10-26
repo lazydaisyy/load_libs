@@ -1,0 +1,27 @@
+%clear all;
+
+cd '\load_libs\';
+
+h5disp('2021_09_24_SMR_99x61.asc')
+smrData = h5read('2021_09_24_SMR_99x61.asc','/Spectra/001');
+wavelengths = h5read('2021_09_24_SMR_99x61.asc','/Wavelengths/1');
+smrClass = h5read('2021_09_24_SMR_99x61.asc','/Class/1');
+
+spectraCount = 6039;
+smrData = smrData(1:spectraCount,:);
+
+for i = 1:(6039-1)
+sequence = [2:6039];
+temp_smrData = h5read('2021_09_24_SMR_99x61.asc',sprintf('/Spectra/%03d',sequence(i)));
+temp_smrData = temp_smrData(1:spectraCount,:);
+smrData = cat(1,smrData,temp_smrData);
+end
+
+redClass = smrClass(1:spectraCount);
+for i = [500:500:49500]
+  tempClass = smrClass((i+1):(i+spectraCount));
+  redClass = cat(1,redClass,tempClass); 
+end
+
+
+clearvars -except smrData wavelengths smrClass
